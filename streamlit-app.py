@@ -158,7 +158,7 @@ def figlist():
     
     fig_list = []
     # load model dict from pickle
-    filename = 'model_results/models_dict.pickle'
+    filename = 'models_dict.pickle'
     model_dict = pickle.load(open(filename, 'rb'))
     from live_probability_model import predict
     for game_id, game_df in format_pbp_dict.items():
