@@ -20,21 +20,16 @@ def time_elapsed(row):
         return 48 + num_overtimes * 5 + 5 - row['time_in_period']
 
 def find_today_games():
-    st.write('find today games')
     today_pbp_dict = {}
     today_odds_dict = scrape_today_odds()
-    st.write('today odds dict', today_odds_dict)
     schedule = scrape_schedule()
-    st.write('schedule', schedule)
     today_date = datetime.today().date()
     schedule['date'] = pd.to_datetime(schedule['game_date']).dt.date
     today_schedule = schedule[schedule['date'] == today_date]
     yesterday_schedule = schedule[schedule['date'] == today_date - pd.Timedelta(days=1)]
     today_schedule = today_schedule.append(yesterday_schedule)
-    st.write('today schedule', today_schedule)
 
     for game_id, game in today_schedule.iterrows():
-        st.write('game:', game_id)
         if game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
             game['home_ml'] = game_odds['home_ml']
@@ -44,7 +39,6 @@ def find_today_games():
             game['away_spread'] = game_odds['away_spread']
             game['away_spread_odds'] = game_odds['away_spread_odds']
         else:
-            st.write('no odds for game:', game_id)
             today_pbp_dict[game_id] = None
             continue
         pbp_data = parse_game(schedule, game_id)
@@ -160,12 +154,10 @@ def make_plot(df):
 
 def figlist():
     today_pbp_dict = find_today_games()
-    st.write(today_pbp_dict)
     format_pbp_dict = {}
     today_pbp_dict = {k: v for k, v in today_pbp_dict.items() if v is not None}
     for game_id, game_data in today_pbp_dict.items():
         format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
-        st.write(format_pbp_dict[game_id])
     
     fig_list = []
     # load model dict from pickle
@@ -188,7 +180,6 @@ def main():
     fig_list = figlist()
     print(len(fig_list))
     for fig in fig_list:
-        st.write('x')
         st.plotly_chart(fig, use_container_width=True)
         
 if __name__ == '__main__':

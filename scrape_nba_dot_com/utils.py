@@ -1,10 +1,8 @@
 import requests
 import numpy as np
 import pandas as pd
-import streamlit as st
 
 def request_pbp(game_id):
-    st.write('request:', game_id)
     url = 'https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_' + str(game_id) + '.json'
     r = requests.get(url)
     try:
