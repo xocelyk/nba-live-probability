@@ -152,10 +152,12 @@ def make_plot(df):
 
 def figlist():
     today_pbp_dict = find_today_games()
+    print(today_pbp_dict)
     format_pbp_dict = {}
     today_pbp_dict = {k: v for k, v in today_pbp_dict.items() if v is not None}
     for game_id, game_data in today_pbp_dict.items():
         format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
+        print(format_pbp_dict[game_id])
     
     fig_list = []
     # load model dict from pickle
@@ -176,6 +178,7 @@ def figlist():
 def main():
     st.title('NBA Live Win Probability')
     fig_list = figlist()
+    print(len(fig_list))
     for fig in fig_list:
         st.write('x')
         st.plotly_chart(fig, use_container_width=True)
