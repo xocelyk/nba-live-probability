@@ -33,7 +33,6 @@ def find_today_games():
 
     for game_id, game in today_schedule.iterrows():
         st.write('game:', game_id)
-        st.write('game:', game)
         if game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
             game['home_ml'] = game_odds['home_ml']
@@ -43,6 +42,7 @@ def find_today_games():
             game['away_spread'] = game_odds['away_spread']
             game['away_spread_odds'] = game_odds['away_spread_odds']
         else:
+            st.write('no odds for game:', game_id)
             today_pbp_dict[game_id] = None
             continue
         pbp_data = parse_game(schedule, game_id)
