@@ -175,11 +175,10 @@ def figlist():
 
 def main():
     st.title('NBA Live Win Probability')
-    st.write('here')
     fig_list = figlist()
     for fig in fig_list:
+        st.write('x')
         st.plotly_chart(fig, use_container_width=True)
-    st.write('finished')
         
 if __name__ == '__main__':
     main()
