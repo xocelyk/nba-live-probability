@@ -97,8 +97,10 @@ def make_plot(df):
     home_score = df['home_score'].iloc[-1]
     away_score = df['away_score'].iloc[-1]
     current_prob = df['home_win_prob'].iloc[-1]
-
-    title = home_name +  ' ' + str(home_score) + ' - ' + str(away_score) + ' ' + away_name + '<br><sup>' + home_name + 'Win Probability: '  + str(round(100 * current_prob, 1)) + '%' + '</sup>'
+    score_string = str(home_score) + ' - ' + str(away_score)
+    vs_string = home_name +  ' ' +  + ' ' + away_name 
+    current_prob_string = 'Current Win Probability: ' + str(round(100 * current_prob, 1)) + '%'
+    title = vs_string + '<br>' + score_string + '<br>' + current_prob_string
     ylabel = home_name + ' Win Probability'
 
     data = []
