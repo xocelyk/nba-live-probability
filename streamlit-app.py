@@ -29,6 +29,8 @@ def find_today_games():
     today_date = datetime.today().date()
     schedule['date'] = pd.to_datetime(schedule['game_date']).dt.date
     today_schedule = schedule[schedule['date'] == today_date]
+    tomorrow_schedule = schedule[schedule['date'] == today_date + pd.Timedelta(days=1)]
+    today_schedule = today_schedule.append(tomorrow_schedule)
     st.write('today schedule', today_schedule)
 
     for game_id, game in today_schedule.iterrows():
