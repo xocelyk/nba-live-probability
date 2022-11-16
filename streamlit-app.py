@@ -32,7 +32,8 @@ def find_today_games():
     st.write('today schedule', today_schedule)
 
     for game_id, game in today_schedule.iterrows():
-        st.write('game:', game_id, game)
+        st.write('game:', game_id)
+        st.write('game:', game)
         if game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
             game['home_ml'] = game_odds['home_ml']
