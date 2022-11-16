@@ -96,7 +96,7 @@ def make_plot(df):
     away_score = df['away_score'].iloc[-1]
     current_prob = df['home_win_prob'].iloc[-1]
 
-    title = home_name +  ' ' + str(home_score) + ' - ' + str(away_score) + ' ' + away_name + '\t' + '('  + str(round(100 * current_prob, 1)) + '%' + ')'
+    title = home_name +  ' ' + str(home_score) + ' - ' + str(away_score) + ' ' + away_name + '\t' + '('  + str(round(100 * current_prob, 1)) + '%' + ' - ' + str(round(100 * (1 - current_prob), 1)) + '%' + ')'
     ylabel = home_name + ' Win Probability'
 
     data = []
@@ -175,9 +175,11 @@ def figlist():
 
 def main():
     st.title('NBA Live Win Probability')
+    st.write('here')
     fig_list = figlist()
     for fig in fig_list:
         st.plotly_chart(fig, use_container_width=True)
+    st.write('finished')
         
 if __name__ == '__main__':
     main()
