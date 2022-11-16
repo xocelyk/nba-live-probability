@@ -3,7 +3,6 @@ from scrape_nba_dot_com.utils import *
 from datetime import datetime
 import pickle
 import pandas as pd
-from plotly import graph_objs as go
 
 
 def time_remaining(row):
