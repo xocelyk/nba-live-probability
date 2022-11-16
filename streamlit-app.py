@@ -20,14 +20,19 @@ def time_elapsed(row):
         return 48 + num_overtimes * 5 + 5 - row['time_in_period']
 
 def find_today_games():
+    st.write('find today games')
     today_pbp_dict = {}
     today_odds_dict = scrape_today_odds()
+    st.write('today odds dict', today_odds_dict)
     schedule = scrape_schedule()
+    st.write('schedule', schedule)
     today_date = datetime.today().date()
     schedule['date'] = pd.to_datetime(schedule['game_date']).dt.date
     today_schedule = schedule[schedule['date'] == today_date]
+    st.write('today schedule', today_schedule)
 
     for game_id, game in today_schedule.iterrows():
+        st.write('game:', game_id, game)
         if game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
             game['home_ml'] = game_odds['home_ml']
