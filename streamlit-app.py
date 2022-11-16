@@ -2,7 +2,6 @@ import streamlit as st
 from scrape_nba_dot_com.utils import *
 from datetime import datetime
 import pickle
-from matplotlib import pyplot as plt
 import pandas as pd
 from plotly import graph_objs as go
 
