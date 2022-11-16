@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 def request_pbp(game_id):
+    print('request:', game_id)
     url = 'https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_' + str(game_id) + '.json'
     r = requests.get(url)
     try:
