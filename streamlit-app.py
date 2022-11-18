@@ -152,7 +152,10 @@ def make_plot(df):
             ticktext=['0%', '25%', '50%', '75%', '100%'],
         ),
         # y lim from 0 to 1
-        yaxis_range=[0, 1]
+        yaxis_range=[0, 1],
+        # add some margin to bottom and left
+        margin=dict(l=50, b=50),
+
     )
     
     return fig
@@ -182,11 +185,18 @@ def figlist():
 
 def main():
     st.title('NBA Live Win Probability')
-    while True:
-        fig_list = figlist()
-        for fig in fig_list:
-            st.plotly_chart(fig, use_container_width=True)
-        time.sleep(30)
+    # use wide layout
+    st.set_page_config(layout="wide")
+    # set figs into columns
+    col1, col2 = st.beta_columns(2)
+
+    fig_list = figlist()
+    for i, fig in enumerate(fig_list):
+        if i % 2 == 0:
+            col1.plotly_chart(fig)
+        else:
+            col2.plotly_chart(fig)
+
         
 if __name__ == '__main__':
     main()
