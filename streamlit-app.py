@@ -171,7 +171,7 @@ def figlist():
     from live_probability_model import predict
     for game_id, game_df in format_pbp_dict.items():
         for idx, row in game_df.iterrows():
-            x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread']]
+            x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread']]
             prob = predict(x, model_dict)
             game_df.loc[idx, 'home_win_prob'] = prob
 

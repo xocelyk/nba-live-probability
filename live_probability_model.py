@@ -91,9 +91,6 @@ def get_xgboost_model(train_df, test_df, x_features, y_features):
     return clf
 
 
-
-    # return xgb_model
-
 def predict(row, models_dict):
     time_remaining = row['time_remaining']
     x = row.values.reshape(1, -1)
@@ -109,6 +106,8 @@ def predict(row, models_dict):
             best_model = model
     if time_remaining > dtree_threshold:
         # find closest time_remaining in models_dict.keys()
+        print(x)
+        print(model.predict_proba(x))
         return best_model.predict_proba(x)[0][1]
     else:
         return blend_preds(dtree_threshold, best_model, models_dict['dtree'], x, time_remaining)
@@ -158,7 +157,7 @@ def model(train_df, test_df, x_features, y_features, verbose=False):
         home_margin = row['home_margin']
         home_close_spread = row['home_close_spread']
         home_win = y_test.loc[idx, 'home_win']
-        x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread']]
+        x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread']]
         # x = np.array([time_remaining, home_margin, home_close_spread]).reshape(1, -1)
 
         if time_remaining > dtree_threshold:
@@ -342,7 +341,7 @@ def get_data(preload=True):
     validate_df['time_elapsed'] = validate_df.apply(time_elapsed, axis=1)
     validate_df['time_remaining'] = validate_df.apply(time_remaining, axis=1)
 
-    x_features = ['time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread']
+    x_features = ['time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread']
     y_features = ['home_win']
 
     all_features = x_features + y_features
@@ -404,7 +403,7 @@ def predict_xgboost(row, model, dtree, use_dtree=True):
 
 def playgrond():
     pred_df = pd.read_csv('pred_results.csv')
-    pred_df.columns = ['id', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread', 'proba', 'home_win']
+    pred_df.columns = ['id', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread', 'proba', 'home_win']
     pred_df['time_remaining_int'] = round(pred_df['time_remaining'], 0).astype(int)
     for time in pred_df['time_remaining_int'].unique():
         error = log_loss(pred_df[pred_df['time_remaining_int'] == time]['home_win'], pred_df[pred_df['time_remaining_int'] == time]['proba'])
