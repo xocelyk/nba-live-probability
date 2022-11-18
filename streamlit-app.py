@@ -4,6 +4,7 @@ from datetime import datetime
 import pickle
 import pandas as pd
 from plotly import graph_objects as go
+from live_probability_model import predict
 import time
 
 
@@ -20,16 +21,17 @@ def time_elapsed(row):
     else:
         return 48 + num_overtimes * 5 + 5 - row['time_in_period']
 
-def find_today_games():
-    today_pbp_dict = {}
-    today_odds_dict = scrape_today_odds()
+# @st.cache
+def get_schedule(today_date):
     schedule = scrape_schedule()
-    today_date = datetime.today().date()
     schedule['date'] = pd.to_datetime(schedule['game_date']).dt.date
     today_schedule = schedule[schedule['date'] == today_date]
     yesterday_schedule = schedule[schedule['date'] == today_date - pd.Timedelta(days=1)]
     today_schedule = today_schedule.append(yesterday_schedule)
+    return today_schedule
 
+def find_today_games(today_schedule, today_odds_dict):
+    today_pbp_dict = {}
     for game_id, game in today_schedule.iterrows():
         if game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
@@ -42,7 +44,7 @@ def find_today_games():
         else:
             today_pbp_dict[game_id] = None
             continue
-        pbp_data = parse_game(schedule, game_id)
+        pbp_data = parse_game(today_schedule, game_id)
         if pbp_data is None:
             # game has not happened yet
             today_pbp_dict[game_id] = None
@@ -100,10 +102,17 @@ def make_plot(df):
     home_score = df['home_score'].iloc[-1]
     away_score = df['away_score'].iloc[-1]
     current_prob = df['home_win_prob'].iloc[-1]
+    current_time = df['string_time_in_period'].iloc[-1]
+    current_period = df['period'].iloc[-1]
+    if current_period < 5:
+        period_string = 'Q' + str(current_period)
+    elif current_period >= 5:
+        period_string = 'OT' + str(current_period - 4)
+    time_string = period_string + ' ' + current_time
     score_string = str(home_score) + ' - ' + str(away_score)
     vs_string = home_name +  ' ' + 'vs.' + ' ' + away_name 
     current_prob_string = 'Current ' + home_name + ' Win Probability: ' + str(round(100 * current_prob, 1)) + '%'
-    title = vs_string + '<br>' + score_string + '<br>' + '<sup>' + current_prob_string + '</sup>'
+    title = vs_string + ' (' + time_string + ')' + '<br>' + score_string + '<br>' + '<sup>' + current_prob_string + '</sup>'
     ylabel = home_name + ' Win Probability'
 
     data = []
@@ -155,47 +164,57 @@ def make_plot(df):
         yaxis_range=[0, 1],
         # add some margin to bottom and left
         margin=dict(l=50, b=50),
+        xaxis_range = [-1, max(48, max(df['time_elapsed'])) + 1],
 
     )
     
     return fig
 
-def figlist():
-    today_pbp_dict = find_today_games()
-    format_pbp_dict = {}
-    today_pbp_dict = {k: v for k, v in today_pbp_dict.items() if v is not None}
-    for game_id, game_data in today_pbp_dict.items():
-        format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
-    
-    fig_list = []
-    # load model dict from pickle
+@st.cache
+def figlist(dfs_list):
+    figlist = []
+    for game_df in dfs_list:
+        plot = make_plot(game_df)
+        figlist.append(plot)
+    return figlist
+
+def predict_game(format_pbp_dict):
+    game_dfs_list = []
     filename = 'models_dict.pickle'
     model_dict = pickle.load(open(filename, 'rb'))
-    from live_probability_model import predict
     for game_id, game_df in format_pbp_dict.items():
         for idx, row in game_df.iterrows():
             x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread']]
             prob = predict(x, model_dict)
             game_df.loc[idx, 'home_win_prob'] = prob
-
-        plot = make_plot(game_df)
-        fig_list.append(plot)
-    
-    return fig_list
+        game_dfs_list.append(game_df)
+    return game_dfs_list
 
 def main():
     st.set_page_config(layout="wide")
     st.title('NBA Live Win Probability')
-    # use wide layout
-    # set figs into columns
-    col1, col2 = st.columns(2)
 
-    fig_list = figlist()
-    for i, fig in enumerate(fig_list):
-        if i % 2 == 0:
-            col1.plotly_chart(fig)
-        else:
-            col2.plotly_chart(fig)
+    placeholder = st.empty()
+
+    while True:
+        today_odds_dict = scrape_today_odds()
+        today_schedule = get_schedule(datetime.today().date())
+        today_pbp_dict = find_today_games(today_schedule, today_odds_dict)
+        format_pbp_dict = {}
+        today_pbp_dict = {k: v for k, v in today_pbp_dict.items() if v is not None}
+        for game_id, game_data in today_pbp_dict.items():
+            format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
+        dfs_list = predict_game(format_pbp_dict)
+        fig_list = figlist(dfs_list)
+
+        with placeholder.container():
+            col1, col2 = st.columns(2)
+            for i, fig in enumerate(fig_list):
+                if i % 2 == 0:
+                    col1.plotly_chart(fig)
+                else:
+                    col2.plotly_chart(fig)
+        time.sleep(30)
 
         
 if __name__ == '__main__':
