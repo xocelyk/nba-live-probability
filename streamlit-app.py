@@ -170,7 +170,7 @@ def make_plot(df):
     
     return fig
 
-@st.cache
+# @st.cache
 def figlist(dfs_list):
     figlist = []
     for game_df in dfs_list:
