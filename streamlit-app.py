@@ -4,6 +4,7 @@ from datetime import datetime
 import pickle
 import pandas as pd
 from plotly import graph_objects as go
+import time
 
 
 def time_remaining(row):
@@ -80,9 +81,11 @@ def format_pbp_df_for_model(df):
     df['string_time_in_period'] = df.apply(time_string, axis=1)
     df['home_margin_diff'] = df['home_margin'].diff()
     df['home_margin_diff'] = df['home_margin_diff'].fillna(0)
+    df['home_margin_diff_2'] = df['home_margin_diff'].diff()
+    df['home_margin_diff_2'] = df['home_margin_diff_2'].fillna(0)
     df['time_elapsed'] = df.apply(time_elapsed, axis=1)
     df['time_remaining'] = df.apply(time_remaining, axis=1)
-    df = df[['period', 'time_elapsed', 'string_time_in_period', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread', 'home_team_name', 'away_team_name', 'home_score', 'away_score']]
+    df = df[['period', 'time_elapsed', 'string_time_in_period', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread', 'home_team_name', 'away_team_name', 'home_score', 'away_score']]
     return df
 
 def make_plot(df):
@@ -168,7 +171,7 @@ def figlist():
     from live_probability_model import predict
     for game_id, game_df in format_pbp_dict.items():
         for idx, row in game_df.iterrows():
-            x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_close_spread']]
+            x = row[['time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread']]
             prob = predict(x, model_dict)
             game_df.loc[idx, 'home_win_prob'] = prob
 
@@ -179,10 +182,11 @@ def figlist():
 
 def main():
     st.title('NBA Live Win Probability')
-    fig_list = figlist()
-    print(len(fig_list))
-    for fig in fig_list:
-        st.plotly_chart(fig, use_container_width=True)
+    while True:
+        fig_list = figlist()
+        for fig in fig_list:
+            st.plotly_chart(fig, use_container_width=True)
+        time.sleep(30)
         
 if __name__ == '__main__':
     main()
