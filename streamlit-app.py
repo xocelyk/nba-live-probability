@@ -184,9 +184,9 @@ def figlist():
     return fig_list
 
 def main():
+    st.set_page_config(layout="wide")
     st.title('NBA Live Win Probability')
     # use wide layout
-    # st.set_page_config(layout="wide")
     # set figs into columns
     col1, col2 = st.columns(2)
 
