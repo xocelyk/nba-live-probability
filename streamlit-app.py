@@ -118,19 +118,19 @@ def make_plot(df):
     data = []
     x = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 53, 58, 63, 68]
     xticks = ['1Q 12:00', '1Q 8:00', '1Q 4:00', '2Q 12:00', '2Q 8:00', '2Q 4:00', '3Q 12:00', '3Q 8:00', '3Q 4:00', '4Q 12:00', '4Q 8:00', '4Q 4:00', '4Q 0:00', 'OT1 5:00', 'OT2 5:00', 'OT3 5:00', 'OT4 5:00']
-    if max(df['time_elapsed']) < 48:
+    if max(df['time_elapsed']) <= 48:
         x = x[:13]
         xticks = xticks[:13]
-    elif max(df['time_elapsed']) < 53:
+    elif max(df['time_elapsed']) <= 53:
         x = x[:14]
         xticks = xticks[:14]
-    elif max(df['time_elapsed']) < 58:
+    elif max(df['time_elapsed']) <= 58:
         x = x[:15]
         xticks = xticks[:15]
-    elif max(df['time_elapsed']) < 63:
+    elif max(df['time_elapsed']) <= 63:
         x = x[:16]
         xticks = xticks[:16]
-    elif max(df['time_elapsed']) < 68:
+    elif max(df['time_elapsed']) <= 68:
         x = x[:17]
         xticks = xticks[:17]
     
