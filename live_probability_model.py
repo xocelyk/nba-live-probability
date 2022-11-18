@@ -106,8 +106,6 @@ def predict(row, models_dict):
             best_model = model
     if time_remaining > dtree_threshold:
         # find closest time_remaining in models_dict.keys()
-        print(x)
-        print(model.predict_proba(x))
         return best_model.predict_proba(x)[0][1]
     else:
         return blend_preds(dtree_threshold, best_model, models_dict['dtree'], x, time_remaining)
