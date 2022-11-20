@@ -29,8 +29,11 @@ def scrape_today_odds():
 def parse_today_odds(game_data):
     # there is more info about movement if I would like to grab that
     game_odds = {}
-    moneyline_books = game_data['markets'][0]['books']
-    spread_books = game_data['markets'][1]['books']
+    try:
+        moneyline_books = game_data['markets'][0]['books']
+        spread_books = game_data['markets'][1]['books']
+    except:
+        return None
 
     # get moneyline odds
     outcomes = None
