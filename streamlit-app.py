@@ -35,12 +35,22 @@ def find_today_games(today_schedule, today_odds_dict):
     for game_id, game in today_schedule.iterrows():
         if game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
-            game['home_ml'] = game_odds['home_ml']
-            game['away_ml'] = game_odds['away_ml']
-            game['home_spread'] = game_odds['home_spread']
-            game['home_spread_odds'] = game_odds['home_spread_odds']
-            game['away_spread'] = game_odds['away_spread']
-            game['away_spread_odds'] = game_odds['away_spread_odds']
+            try:
+                game['home_ml'] = game_odds['home_ml']
+                game['away_ml'] = game_odds['away_ml']
+            except:
+                game['home_ml'] = None
+                game['away_ml'] = None
+            try:
+                game['home_spread'] = game_odds['home_spread']
+                game['home_spread_odds'] = game_odds['home_spread_odds']
+                game['away_spread'] = game_odds['away_spread']
+                game['away_spread_odds'] = game_odds['away_spread_odds']
+            except:
+                game['home_spread'] = None
+                game['home_spread_odds'] = None
+                game['away_spread'] = None
+                game['away_spread_odds'] = None
         else:
             today_pbp_dict[game_id] = None
             continue
