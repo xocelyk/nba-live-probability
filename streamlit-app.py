@@ -101,7 +101,7 @@ def format_pbp_df_for_model(df):
     if df.iloc[-1]['event'] == 'Game End':
         df.iloc[-1]['home_win_prob'] = 0 if df.iloc[-1]['home_margin'] < 0 else 1
         # save as pickle to nba_dot_com_data/tracked_live_games
-        df.to_pickle('nba_dot_com_data/tracked_live_games/' + str(df.iloc[0]['game_id']) + '.pickle')
+        df.to_pickle('tracked_game_' + str(df.iloc[0]['game_id']) + '.pickle')
     df = df[['period', 'time_elapsed', 'string_time_in_period', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread', 'home_team_name', 'away_team_name', 'home_score', 'away_score', 'event']]
     return df
 
