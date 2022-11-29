@@ -97,7 +97,8 @@ def format_pbp_df_for_model(df):
     df['home_margin_diff_2'] = df['home_margin_diff_2'].fillna(0)
     df['time_elapsed'] = df.apply(time_elapsed, axis=1)
     df['time_remaining'] = df.apply(time_remaining, axis=1)
-    df = df[['period', 'time_elapsed', 'string_time_in_period', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread', 'home_team_name', 'away_team_name', 'home_score', 'away_score']]
+    df['event'] = df['description']
+    df = df[['period', 'time_elapsed', 'string_time_in_period', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread', 'home_team_name', 'away_team_name', 'home_score', 'away_score', 'event']]
     return df
 
 def make_plot(df):
@@ -107,8 +108,23 @@ def make_plot(df):
 
     '''
 
+    # colors = {'ATL': '#E03A3E', 'BRK': '#5F6264', 'BOS': '#007A33', 'CHO': '#00FFFF', 'CHI': '#CE1141', 'CLE': '#860038', 'DAL': '#00538C', 'DEN': '#0E2240', 'DET': '#C8102E',
+    #     'GSW': '#006BB6', 'HOU': '#CE1141', 'IND': '#002D62', 'LAC': '#C8102E', 'LAL': '#552583', 'MEM': '#5D76A9', 'MIA': '#98002E', 'MIL': '#00471B', 'MIN': '#32CD32',
+    #     'NOP': '#0C2340', 'NYK': '#FFA500', 'OKC': '#007AC1', 'ORL': '#0077C0', 'PHI': '#006BB6', 'PHO': '#1D1160', 'POR': '#E03A3E', 'SAC': '#5A2D81', 'SAS': '#C4CED4',
+    #     'TOR': '#CE1141', 'UTA': '#002B5C', 'WAS': '#002B5C'}
+
+    colors = {'Atlanta Hawks': '#0077C0', 'Brooklyn Nets': '#5F6264', 'Boston Celtics': '#007A33', 'Charlotte Hornets': '#00FFFF', 'Chicago Bulls': '#CE1141', 'Cleveland Cavaliers': '#860038', 'Dallas Mavericks': '#00538C', 'Denver Nuggets': '#0E2240', 'Detroit Pistons': '#C8102E', \
+    'Golden State Warriors': '#006BB6', 'Houston Rockets': '#CE1141', 'Indiana Pacers': '#002D62', 'Los Angeles Clippers': '#C8102E', 'Los Angeles Lakers': '#552583', 'Memphis Grizzlies': '#5D76A9', 'Miami Heat': '#98002E', 'Milwaukee Bucks': '#00471B', 'Minnesota Timberwolves': '#32CD32', \
+    'New Orleans Pelicans': '#0062CC', 'New York Knicks': '#FFA500', 'Oklahoma City Thunder': '#007AC1', 'Orlando Magic': '#0077C0', 'Philadelphia 76ers': '#006BB6', 'Phoenix Suns': '#1D1160', 'Portland Trail Blazers': '#E03A3E', 'Sacramento Kings': '#5A2D81', 'San Antonio Spurs': '#C4CED4', \
+    'Toronto Raptors': '#CE1141', 'Utah Jazz': '#002B5C', 'Washington Wizards': '#0062CC'}
+
+
+
+    df['score_string'] = df['home_score'].astype(str) + '-' + df['away_score'].astype(str)
+    df['win_prob_string'] = (100 * df['home_win_prob']).round(1).astype(str) + '%'
     home_name = df['home_team_name'].iloc[0]
     away_name = df['away_team_name'].iloc[0]
+    winning_team = df.iloc[-1]['home_team_name'] if df.iloc[-1]['home_win_prob'] >= .5 else df.iloc[-1]['away_team_name']
     home_score = df['home_score'].iloc[-1]
     away_score = df['away_score'].iloc[-1]
     current_prob = df['home_win_prob'].iloc[-1]
@@ -125,38 +141,44 @@ def make_plot(df):
     title = vs_string + ' (' + time_string + ')' + '<br>' + score_string + '<br>' + '<sup>' + current_prob_string + '</sup>'
     ylabel = home_name + ' Win Probability'
 
+    df['home_win_prob'] = round(df['home_win_prob'], 3)
+    df['time_elapsed'] = round(df['time_elapsed'], 2)
+
     data = []
-    x = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 53, 58, 63, 68]
-    xticks = ['1Q 12:00', '1Q 8:00', '1Q 4:00', '2Q 12:00', '2Q 8:00', '2Q 4:00', '3Q 12:00', '3Q 8:00', '3Q 4:00', '4Q 12:00', '4Q 8:00', '4Q 4:00', '4Q 0:00', 'OT1 5:00', 'OT2 5:00', 'OT3 5:00', 'OT4 5:00']
+    x = [0, 12, 24, 36, 48, 53, 58, 63, 68]
+    xticks = ['1Q 12:00', '2Q 12:00', '3Q 12:00', '4Q 12:00', '4Q 0:00', 'OT1 0:00', 'OT2 0:00', 'OT3 0:00', 'OT4 0:00']
     if max(df['time_elapsed']) <= 48:
-        x = x[:13]
-        xticks = xticks[:13]
+        x = x[:5]
+        xticks = xticks[:5]
     elif max(df['time_elapsed']) <= 53:
-        x = x[:14]
-        xticks = xticks[:14]
+        x = x[:6]
+        xticks = xticks[:6]
     elif max(df['time_elapsed']) <= 58:
-        x = x[:15]
-        xticks = xticks[:15]
+        x = x[:7]
+        xticks = xticks[:7]
     elif max(df['time_elapsed']) <= 63:
-        x = x[:16]
-        xticks = xticks[:16]
+        x = x[:8]
+        xticks = xticks[:8]
     elif max(df['time_elapsed']) <= 68:
-        x = x[:17]
-        xticks = xticks[:17]
+        x = x[:9]
+        xticks = xticks[:9]
     
     for i in range(len(x)):
         data.append([x[i], xticks[i], np.nan])
     for i, row in df.iterrows():
-        data.append([row['time_elapsed'], row['string_time_in_period'], row['home_win_prob']])
+        data.append([row['time_elapsed'], row['string_time_in_period'], row['home_win_prob'], row['score_string'], row['event'], row['win_prob_string']])
 
-    df = pd.DataFrame(data, columns=['time_elapsed', 'time_string', 'home_win_prob'])
+    df = pd.DataFrame(data, columns=['time_elapsed', 'string_time_in_period', 'home_win_prob', 'score_string', 'event', 'win_prob_string'])
     df = df.sort_values(by=['time_elapsed'])
     df = df.reset_index(drop=True)
     df = df.interpolate(method='linear', limit_direction='backward')
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df['time_elapsed'], y=df['home_win_prob'], mode='lines', name='lines'))
+    fig.add_trace(go.Scatter(x=df['time_elapsed'], y=df['home_win_prob'], mode='lines', name='lines', line=dict(color=colors[winning_team]),
+                            customdata=df[['score_string', 'event', 'win_prob_string']], hovertemplate='%{customdata[0]}<br>%{customdata[1]}<br>%{customdata[2]}<extra></extra>'))
+
     fig.update_layout(
+        template='plotly_dark',
         title=title,
         xaxis_title="Time",
         yaxis_title=ylabel,
@@ -175,6 +197,19 @@ def make_plot(df):
         # add some margin to bottom and left
         margin=dict(l=50, b=50),
         xaxis_range = [-1, max(48, max(df['time_elapsed'])) + 1],
+        
+        hovermode='closest',
+        # remove legend
+        showlegend=False,
+
+        # make grid lines light grey
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        xaxis_gridcolor='#404040',
+        yaxis_gridcolor='#404040',
+
+
+
 
     )
     
@@ -190,7 +225,7 @@ def figlist(dfs_list):
 
 def predict_game(format_pbp_dict):
     game_dfs_list = []
-    filename = 'models_dict.pickle'
+    filename = 'model_results/models_dict.pickle'
     model_dict = pickle.load(open(filename, 'rb'))
     for game_id, game_df in format_pbp_dict.items():
         for idx, row in game_df.iterrows():
@@ -224,7 +259,7 @@ def main():
                     col1.plotly_chart(fig)
                 else:
                     col2.plotly_chart(fig)
-        time.sleep(30)
+        time.sleep(10)
 
         
 if __name__ == '__main__':
