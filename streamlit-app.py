@@ -118,9 +118,11 @@ def make_plot(df):
     #     'TOR': '#CE1141', 'UTA': '#002B5C', 'WAS': '#002B5C'}
 
     colors = {'Atlanta Hawks': '#0077C0', 'Brooklyn Nets': '#5F6264', 'Boston Celtics': '#007A33', 'Charlotte Hornets': '#00FFFF', 'Chicago Bulls': '#CE1141', 'Cleveland Cavaliers': '#860038', 'Dallas Mavericks': '#00538C', 'Denver Nuggets': '#0E2240', 'Detroit Pistons': '#C8102E', \
-    'Golden State Warriors': '#006BB6', 'Houston Rockets': '#CE1141', 'Indiana Pacers': '#002D62', 'Los Angeles Clippers': '#C8102E', 'Los Angeles Lakers': '#552583', 'Memphis Grizzlies': '#5D76A9', 'Miami Heat': '#98002E', 'Milwaukee Bucks': '#00471B', 'Minnesota Timberwolves': '#32CD32', \
+    'Golden State Warriors': '#006BB6', 'Houston Rockets': '#CE1141', 'Indiana Pacers': '#002D62', 'Los Angeles Clippers': '#C8102E', 'Los Angeles Lakers': '#552583', 'LA Clippers': '#C8102E', 'LA Lakers': '#552583', 'Memphis Grizzlies': '#5D76A9', 'Miami Heat': '#98002E', 'Milwaukee Bucks': '#00471B', 'Minnesota Timberwolves': '#32CD32', \
     'New Orleans Pelicans': '#0062CC', 'New York Knicks': '#FFA500', 'Oklahoma City Thunder': '#007AC1', 'Orlando Magic': '#0077C0', 'Philadelphia 76ers': '#006BB6', 'Phoenix Suns': '#1D1160', 'Portland Trail Blazers': '#E03A3E', 'Sacramento Kings': '#5A2D81', 'San Antonio Spurs': '#C4CED4', \
     'Toronto Raptors': '#CE1141', 'Utah Jazz': '#002B5C', 'Washington Wizards': '#0062CC'}
+
+    blue_hex = '#0096FF'
 
 
 
@@ -178,7 +180,7 @@ def make_plot(df):
     df = df.interpolate(method='linear', limit_direction='backward')
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df['time_elapsed'], y=df['home_win_prob'], mode='lines', name='lines', line=dict(color=colors[winning_team]),
+    fig.add_trace(go.Scatter(x=df['time_elapsed'], y=df['home_win_prob'], mode='lines', name='lines', line=dict(color=colors.get(winning_team, blue_hex)),
                             customdata=df[['score_string', 'event', 'win_prob_string']], hovertemplate='%{customdata[0]}<br>%{customdata[1]}<br>%{customdata[2]}<extra></extra>'))
 
     fig.update_layout(
