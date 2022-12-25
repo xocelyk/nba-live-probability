@@ -258,6 +258,7 @@ def live_probability_page():
             home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
 
         dfs_list = predict_game(format_pbp_dict)
+
         cur_win_prob_list = []
         tension_list = []
         excitement_list = []
@@ -283,7 +284,6 @@ def live_probability_page():
                 
         time.sleep(sleep_time)
 
-@ st.cache
 def archive_page():
     # TODO: write some explanation stuff
     st.title('NBA Live Win Probability Archive')
@@ -291,7 +291,6 @@ def archive_page():
     df_for_show = archive_df.copy()
     df_for_show['Date'] = pd.to_datetime(df_for_show['Date']).dt.date
     df_for_show = df_for_show.sort_values(by=['Date'], ascending=True)
-    # df_for_show['Matchup'] = df_for_show['Home'] + ' vs. ' + df_for_show['Away']
     df_for_show['Final Score'] = df_for_show['Home Score'].astype(str) + '-' + df_for_show['Away Score'].astype(str)
     # round the descriptive stats to 2 decimal places
     df_for_show['Excitement'] = df_for_show['Excitement'].round(4)
@@ -299,13 +298,6 @@ def archive_page():
     df_for_show['Dominance'] = df_for_show['Dominance'].round(4)
 
     df_for_show = df_for_show[['Date', 'Home', 'Away', 'Final Score', 'Excitement', 'Tension', 'Dominance']]
-    # drop index
-
-
-    # df_for_show = df_for_show.rename(columns={'Date': 'Date', 'Matchup': 'Matchup', 'Final Score': 'Final Score', 'Excitement Index': 'Excitement Index', 'Tension Index': 'Tension Index', 'Dominance Index': 'Dominance Index'})
-    # df_for_show = df_for_show.set_index('Date')
-    # df_for_show = df_for_show.sort_values(by=['Date'], ascending=True)
-    # df_for_show = df_for_show.reset_index()
 
     st.dataframe(df_for_show.set_index('Date'))
 
@@ -323,13 +315,11 @@ def archive_page():
     plot.update_layout(height=600, width=1000)
     st.plotly_chart(plot)
 
-@ st.cache
 def dominance_rankings_page():
     st.title('NBA Dominance Rankings')
     # TODO: write some explanation stuff
     rankings_df = get_dominance_rankings()
     st.dataframe(rankings_df)
-
         
 if __name__ == '__main__':
     # make two different pages
