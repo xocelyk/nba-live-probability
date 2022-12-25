@@ -13,11 +13,6 @@ from plot import get_tension_index, get_excitement_index, get_dominance_index
 
 X_FEATURES = ['time_remaining', 'home_margin', 'home_possession', 'home_close_spread', 'fts_remaining', 'foul', 'turnover', 'steal', 'block', 'timeout', 'offensive_foul', 'defensive_foul', 'offensive_rebound', 'defensive_rebound']
 
-# colors = {'ATL': '#E03A3E', 'BRK': '#5F6264', 'BOS': '#007A33', 'CHO': '#00FFFF', 'CHI': '#CE1141', 'CLE': '#860038', 'DAL': '#00538C', 'DEN': '#FDB827', 'DET': '#C8102E',
-#         'GSW': '#006BB6', 'HOU': '#CE1141', 'IND': '#002D62', 'LAC': '#C8102E', 'LAL': '#552583', 'MEM': '#5D76A9', 'MIA': '#98002E', 'MIL': '#00471B', 'MIN': '#32CD32',
-#         'NOP': '#0C2340', 'NYK': '#FFA500', 'OKC': '#007AC1', 'ORL': '#0077C0', 'PHI': '#006BB6', 'PHO': '#1D1160', 'POR': '#E03A3E', 'SAC': '#6F2DA8', 'SAS': '#C4CED4',
-#         'TOR': '#CE1141', 'UTA': '#002B5C', 'WAS': '#002B5C'}
-
 colors = {'Atlanta Hawks': '#E03A3E', 'Brooklyn Nets': '#5F6264', 'Boston Celtics': '#007A33', 'Charlotte Hornets': '#00FFFF', 'Chicago Bulls': '#CE1141', 'Cleveland Cavaliers': '#860038', 'Dallas Mavericks': '#00538C', 'Denver Nuggets': '#FDB827', 'Detroit Pistons': '#C8102E',
         'Golden State Warriors': '#006BB6', 'Houston Rockets': '#CE1141', 'Indiana Pacers': '#002D62', 'Los Angeles Clippers': '#C8102E', 'Los Angeles Lakers': '#552583', 'Memphis Grizzlies': '#5D76A9', 'Miami Heat': '#98002E', 'Milwaukee Bucks': '#00471B', 'Minnesota Timberwolves': '#32CD32',
         'New Orleans Pelicans': '#0C2340', 'New York Knicks': '#FFA500', 'Oklahoma City Thunder': '#007AC1', 'Orlando Magic': '#0077C0', 'Philadelphia 76ers': '#006BB6', 'Phoenix Suns': '#1D1160', 'Portland Trail Blazers': '#E03A3E', 'Sacramento Kings': '#6F2DA8', 'San Antonio Spurs': '#C4CED4',
@@ -101,33 +96,6 @@ def time_string(row):
 def format_pbp_df_for_model(df):
     # TODO: double check this works before deploying
     df = format_pbp_df(df)
-    return df
-    
-    # df['home_team_name'] = df['hTeam_city'] + ' ' + df['hTeam_name']
-    # df['away_team_name'] = df['aTeam_city'] + ' ' + df['aTeam_name']
-    # df['home_score'] = df['scoreHome'].astype(int)
-    # df['away_score'] = df['scoreAway'].astype(int)
-    # df['home_margin'] = df['home_score'] - df['away_score']
-    # df['home_close_spread'] = df['home_spread']
-    # df['period'] = df['period'].astype(int)
-    # df['time_in_period'] = df['timeInPeriod']
-    # df['time_in_period_minutes'] = (60 * df['time_in_period']) // 60
-    # df['time_in_period_minutes'] = df['time_in_period_minutes'].astype(int)
-    # df['time_in_period_seconds'] = (60 * df['time_in_period']) % 60
-    # df['time_in_period_seconds'] = df['time_in_period_seconds'].astype(int)
-    # df['string_time_in_period'] = df.apply(time_string, axis=1)
-    # df['home_margin_diff'] = df['home_margin'].diff()
-    # df['home_margin_diff'] = df['home_margin_diff'].fillna(0)
-    # df['home_margin_diff_2'] = df['home_margin_diff'].diff()
-    # df['home_margin_diff_2'] = df['home_margin_diff_2'].fillna(0)
-    # df['time_elapsed'] = df.apply(time_elapsed, axis=1)
-    # df['time_remaining'] = df.apply(time_remaining, axis=1)
-    # df['event'] = df['description']
-    # if df.iloc[-1]['event'] == 'Game End':
-    #     df.iloc[-1]['home_win_prob'] = 0 if df.iloc[-1]['home_margin'] < 0 else 1
-    # # save as pickle to nba_dot_com_data/tracked_live_games
-    # # df.to_pickle('tracked_game_' + str(df.iloc[0]['game_id']) + '.pickle')
-    # df = df[['period', 'time_elapsed', 'string_time_in_period', 'time_remaining', 'home_margin', 'home_margin_diff', 'home_margin_diff_2', 'home_close_spread', 'home_team_name', 'away_team_name', 'home_score', 'away_score', 'event']]
     return df
 
 def make_plot(df):
@@ -217,7 +185,6 @@ def make_plot(df):
     
     return fig
 
-# @st.cache
 def figlist(dfs_list):
     figlist = []
     for game_df in dfs_list:
@@ -266,7 +233,6 @@ def get_archive_table():
     # reindex plot dict by archive_df index
     plot_dict = {k: plot_dict[v] for k, v in zip(archive_df.index, archive_df['boxscore_id'])}
     return archive_df, plot_dict
-
 
 def live_probability_page():
     st.title('NBA Live Win Probability')
@@ -317,6 +283,7 @@ def live_probability_page():
                 
         time.sleep(sleep_time)
 
+@ st.cache
 def archive_page():
     # TODO: write some explanation stuff
     st.title('NBA Live Win Probability Archive')
@@ -356,13 +323,12 @@ def archive_page():
     plot.update_layout(height=600, width=1000)
     st.plotly_chart(plot)
 
-
+@ st.cache
 def dominance_rankings_page():
     st.title('NBA Dominance Rankings')
     # TODO: write some explanation stuff
     rankings_df = get_dominance_rankings()
     st.dataframe(rankings_df)
-
 
         
 if __name__ == '__main__':
