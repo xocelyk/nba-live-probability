@@ -130,7 +130,7 @@ def make_plot(df):
 
     data = []
     x = [0, 12, 24, 36, 48, 53, 58, 63, 68]
-    xticks = ['1Q 12:00', '2Q 12:00', '3Q 12:00', '4Q 12:00', '4Q 0:00', 'OT1 0:00', 'OT2 0:00', 'OT3 0:00', 'OT4 0:00']
+    xticks = ['1Q', '2Q', '3Q', '4Q', 'End Regulation', 'End OT1', 'End OT2', 'End OT3', 'End OT4']
     if max(df['time_elapsed']) <= 48:
         x = x[:5]
         xticks = xticks[:5]
@@ -207,6 +207,9 @@ def predict_game(format_pbp_dict):
     return game_dfs_list
 
 def get_archive_table():
+    '''
+    going to have to update the archive manually on the other script
+    '''
     plot_dict = {}
     filename = '2023_archive.pickle'
     archive_data = []
