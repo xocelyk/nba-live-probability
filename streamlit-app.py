@@ -310,7 +310,7 @@ def live_probability_page():
                 col1.metric('Tension', round(tension_list[i], 1))
                 col2.metric('Excitement', round(excitement_list[i], 1))
                 col3.metric('{} Dominance'.format(home_abbr_list[i]), round(dominance_list[i], 1))
-                col4.metric('Current {} Win Probability'.format(home_abbr_list[i]), round(100 * cur_win_prob_list[i], 1))
+                col4.metric('{} Win Probability'.format(home_abbr_list[i]), round(100 * cur_win_prob_list[i], 1))
 
                 st.plotly_chart(fig)
 
