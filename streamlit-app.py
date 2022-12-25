@@ -285,15 +285,19 @@ def live_probability_page():
 
         matchup_list = []
         home_abbr_list = []
+
         for game_id, game_data in today_pbp_dict.items():
             format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
             matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
             home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
+
         dfs_list = predict_game(format_pbp_dict)
+        cur_win_prob_list = []
         tension_list = []
         excitement_list = []
         dominance_list = []
         for game_df in dfs_list:
+            cur_win_prob_list.append(game_df['home_win_prob'].values[-1])
             tension_list.append(get_tension_index(game_df))
             excitement_list.append(get_excitement_index(game_df))
             dominance_list.append(get_dominance_index(game_df))
@@ -302,10 +306,12 @@ def live_probability_page():
 
         with placeholder.container():
             for i, fig in enumerate(fig_list):
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 col1.metric('Tension', round(tension_list[i], 1))
                 col2.metric('Excitement', round(excitement_list[i], 1))
                 col3.metric('{} Dominance'.format(home_abbr_list[i]), round(dominance_list[i], 1))
+                col4.metric('Current {} Win Probability'.format(home_abbr_list[i]), round(100 * cur_win_prob_list[i], 1))
+
                 st.plotly_chart(fig)
 
                 
