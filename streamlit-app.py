@@ -9,12 +9,13 @@ import time
 from format_pbp2.format_nba_dot_com_pbp import format_pbp_df
 from probability_archive_report import get_dominance_rankings
 from plot import get_tension_index, get_excitement_index, get_dominance_index
+import dill
 
 
 X_FEATURES = ['time_remaining', 'home_margin', 'home_possession', 'home_close_spread', 'fts_remaining', 'foul', 'turnover', 'steal', 'block', 'timeout', 'offensive_foul', 'defensive_foul', 'offensive_rebound', 'defensive_rebound']
 
 colors = {'Atlanta Hawks': '#E03A3E', 'Brooklyn Nets': '#5F6264', 'Boston Celtics': '#007A33', 'Charlotte Hornets': '#00FFFF', 'Chicago Bulls': '#CE1141', 'Cleveland Cavaliers': '#860038', 'Dallas Mavericks': '#00538C', 'Denver Nuggets': '#FDB827', 'Detroit Pistons': '#C8102E',
-        'Golden State Warriors': '#006BB6', 'Houston Rockets': '#CE1141', 'Indiana Pacers': '#002D62', 'Los Angeles Clippers': '#C8102E', 'Los Angeles Lakers': '#552583', 'Memphis Grizzlies': '#5D76A9', 'Miami Heat': '#98002E', 'Milwaukee Bucks': '#00471B', 'Minnesota Timberwolves': '#32CD32',
+        'Golden State Warriors': '#006BB6', 'Houston Rockets': '#CE1141', 'Indiana Pacers': '#002D62', 'LA Clippers': '#C8102E', 'Los Angeles Lakers': '#552583', 'Memphis Grizzlies': '#5D76A9', 'Miami Heat': '#98002E', 'Milwaukee Bucks': '#00471B', 'Minnesota Timberwolves': '#32CD32',
         'New Orleans Pelicans': '#0C2340', 'New York Knicks': '#FFA500', 'Oklahoma City Thunder': '#007AC1', 'Orlando Magic': '#0077C0', 'Philadelphia 76ers': '#006BB6', 'Phoenix Suns': '#1D1160', 'Portland Trail Blazers': '#E03A3E', 'Sacramento Kings': '#6F2DA8', 'San Antonio Spurs': '#C4CED4',
         'Toronto Raptors': '#CE1141', 'Utah Jazz': '#002B5C', 'Washington Wizards': '#002B5C'}
 
@@ -196,15 +197,17 @@ def figlist(dfs_list):
 
 # TODO: predict with xgb model and format data differently for feature extraction
 def predict_game(format_pbp_dict):
-    game_dfs_list = []
+    game_dfs_dict = {}
     filename = 'model_results/xgboost_model.pickle'
-    model = pickle.load(open(filename, 'rb'))
+    model = dill.load(open(filename, 'rb'))
     # print model features
 
     for game_id, game_df in format_pbp_dict.items():
         game_df['home_win_prob'] = model.predict_proba(game_df[X_FEATURES])[:, 1]
-        game_dfs_list.append(game_df)
-    return game_dfs_list
+        if game_df['description'].iloc[-1] == 'Game End':
+            game_df.iloc[-1, game_df.columns.get_loc('home_win_prob')] = int(game_df['scoreHome'].iloc[-1] > game_df['scoreAway'].iloc[-1])
+        game_dfs_dict[game_id] = game_df
+    return game_dfs_dict
 
 def get_archive_table():
     '''
@@ -213,7 +216,7 @@ def get_archive_table():
     plot_dict = {}
     filename = '2023_archive.pickle'
     archive_data = []
-    archive_dict = pickle.load(open(filename, 'rb'))
+    archive_dict = dill.load(open(filename, 'rb'))
     for boxscore_id, game_data in archive_dict.items():
         df = game_data['df']
         plot = game_data['plot']
@@ -243,6 +246,9 @@ def live_probability_page():
     sleep_time = 10
     placeholder = st.empty()
 
+    cache_dfs_dict = {}
+    first_run = True
+
     while True:
         today_odds_dict = scrape_today_odds()
         today_schedule = get_schedule(datetime.today().date())
@@ -260,19 +266,40 @@ def live_probability_page():
             matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
             home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
 
-        dfs_list = predict_game(format_pbp_dict)
+
+        dfs_dict = {}
+        for game_id, game_df in format_pbp_dict.items():
+            # find the indices that are not in the cache
+            if game_id in cache_dfs_dict:
+                cache_df = cache_dfs_dict[game_id]
+                cache_index = cache_df.index
+                game_index = game_df.index
+                # new index is used for prediction
+                new_index = game_index.difference(cache_index)
+                if len(new_index) == 0:
+                    dfs_dict[game_id] = cache_df
+                    continue
+                new_df = game_df.loc[new_index]
+                df_dict = predict_game({game_id: new_df})
+                game_df = pd.concat([cache_df, df_dict[game_id]])
+            else:
+                df_dict = predict_game({game_id: game_df})
+                game_df = df_dict[game_id]
+            dfs_dict[game_id] = game_df
+        cache_dfs_dict = dfs_dict
+        # dfs_dict = predict_game(format_pbp_dict)
 
         cur_win_prob_list = []
         tension_list = []
         excitement_list = []
         dominance_list = []
-        for game_df in dfs_list:
+        for game_id, game_df in dfs_dict.items():
             cur_win_prob_list.append(game_df['home_win_prob'].values[-1])
             tension_list.append(get_tension_index(game_df))
             excitement_list.append(get_excitement_index(game_df))
             dominance_list.append(get_dominance_index(game_df))
             
-        fig_list = figlist(dfs_list)
+        fig_list = figlist(dfs_dict.values())
 
         with placeholder.container():
             for i, fig in enumerate(fig_list):
@@ -286,6 +313,7 @@ def live_probability_page():
 
                 
         time.sleep(sleep_time)
+        first_run = False
 
 def archive_page():
     # TODO: write some explanation stuff
