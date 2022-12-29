@@ -209,7 +209,7 @@ def predict_game(format_pbp_dict):
         game_dfs_dict[game_id] = game_df
     return game_dfs_dict
 
-@ st.cache
+@ st.cache(allow_output_mutation=True)
 def get_archive_table():
     '''
     going to have to update the archive manually on the other script
