@@ -196,18 +196,17 @@ def figlist(dfs_list):
     return figlist
 
 # TODO: predict with xgb model and format data differently for feature extraction
-def predict_game(format_pbp_dict):
+def predict_game(game_df):
     game_dfs_dict = {}
     filename = 'model_results/xgboost_model.pickle'
     model = dill.load(open(filename, 'rb'))
     # print model features
 
-    for game_id, game_df in format_pbp_dict.items():
-        game_df['home_win_prob'] = model.predict_proba(game_df[X_FEATURES])[:, 1]
-        if game_df['description'].iloc[-1] == 'Game End':
-            game_df.iloc[-1, game_df.columns.get_loc('home_win_prob')] = int(game_df['scoreHome'].iloc[-1] > game_df['scoreAway'].iloc[-1])
-        game_dfs_dict[game_id] = game_df
-    return game_dfs_dict
+
+    game_df['home_win_prob'] = model.predict_proba(game_df[X_FEATURES])[:, 1]
+    if game_df['description'].iloc[-1] == 'Game End':
+        game_df.iloc[-1, game_df.columns.get_loc('home_win_prob')] = int(game_df['scoreHome'].iloc[-1] > game_df['scoreAway'].iloc[-1])
+    return game_df
 
 @ st.cache(allow_output_mutation=True)
 def get_archive_table():
@@ -250,9 +249,18 @@ def live_probability_page():
     cache_dfs_dict = {}
     first_run = True
 
+    cache_today_odds_dict = {}
+    cache_today_schedule = {}
+    counter = 0
     while True:
-        today_odds_dict = scrape_today_odds()
-        today_schedule = get_schedule(datetime.today().date())
+        if counter % 10 == 0:
+            today_odds_dict = scrape_today_odds()
+            today_schedule = get_schedule(datetime.today().date())
+            cache_today_odds_dict = today_odds_dict
+            cache_today_schedule = today_schedule
+        else:
+            today_odds_dict = cache_today_odds_dict
+            today_schedule = cache_today_schedule
         today_pbp_dict = find_today_games(today_schedule, today_odds_dict)
         if len(today_pbp_dict) == 0:
             st.write('No games right now. Check back later.')
@@ -267,28 +275,20 @@ def live_probability_page():
             matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
             home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
 
-
         dfs_dict = {}
         for game_id, game_df in format_pbp_dict.items():
-            # find the indices that are not in the cache
             if game_id in cache_dfs_dict:
-                cache_df = cache_dfs_dict[game_id]
-                cache_index = cache_df.index
-                game_index = game_df.index
-                # new index is used for prediction
-                new_index = game_index.difference(cache_index)
-                if len(new_index) == 0:
-                    dfs_dict[game_id] = cache_df
-                    continue
-                new_df = game_df.loc[new_index]
-                df_dict = predict_game({game_id: new_df})
-                game_df = pd.concat([cache_df, df_dict[game_id]])
+                new_indices = game_df.index.difference(cache_dfs_dict[game_id].index)
+                if len(new_indices) > 0:
+                    new_pred_df = predict_game(game_df.loc[new_indices])
+                    dfs_dict[game_id] = pd.concat([cache_dfs_dict[game_id], new_pred_df])
+                    cache_dfs_dict[game_id] = dfs_dict[game_id]
+                else:
+                    dfs_dict[game_id] = cache_dfs_dict[game_id]
+            
             else:
-                df_dict = predict_game({game_id: game_df})
-                game_df = df_dict[game_id]
-            dfs_dict[game_id] = game_df
-        cache_dfs_dict = dfs_dict
-        # dfs_dict = predict_game(format_pbp_dict)
+                dfs_dict[game_id] = predict_game(game_df)
+                cache_dfs_dict[game_id] = dfs_dict[game_id]
 
         cur_win_prob_list = []
         tension_list = []
@@ -314,7 +314,7 @@ def live_probability_page():
 
                 
         time.sleep(sleep_time)
-        first_run = False
+        counter += 1
 
 def archive_page():
     # TODO: write some explanation stuff
