@@ -167,7 +167,7 @@ def make_plot(df):
 
     data = []
     x = [0, 12, 24, 36, 48, 53, 58, 63, 68]
-    xticks = ['1Q', '2Q', '3Q', '4Q', 'Final', 'Final OT1', 'Final OT2', 'Final OT3', 'Final OT4']
+    xticks = ['1Q', '2Q', '3Q', '4Q', 'End Regulation', 'End OT1', 'End OT2', 'End OT3', 'End OT4']
     if max(df['time_elapsed']) <= 48:
         x = x[:5]
         xticks = xticks[:5]
@@ -347,9 +347,12 @@ def get_excitement_index(df):
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')
     df = df.interpolate(method='linear', limit_direction='backward')
-    df['win_prob_diff'] = df['home_win_prob'].diff().abs()
-
-    return df['win_prob_diff'].sum() / max(df['time_elapsed']) * 100
+    df['home_win_prob_temp'] = df['home_win_prob']
+    df['home_win_prob_temp'] = df.apply(lambda row: min(max(0.01, row['home_win_prob_temp']), 0.99), axis=1)
+    df['home_win_prob'] = df['home_win_prob_temp']
+    df['home_log_odds_win'] = np.log(df['home_win_prob'] / (1 - df['home_win_prob']))
+    df['log_odds_diff'] = df['home_log_odds_win'].diff().abs()
+    return df['log_odds_diff'].sum() / max(df['time_elapsed']) * 50
 
 def get_dominance_index(df):
     '''
