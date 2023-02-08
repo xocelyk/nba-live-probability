@@ -52,6 +52,7 @@ def find_today_games(today_schedule, today_odds_dict):
     today_pbp_dict = {}
     for game_id, game in today_schedule.iterrows():
         if game_id in today_odds_dict:
+            print(game_id)
             game_odds = today_odds_dict[game_id]
             try:
                 game['home_ml'] = game_odds['home_ml']
