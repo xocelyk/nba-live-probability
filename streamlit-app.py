@@ -52,7 +52,6 @@ def find_today_games(today_schedule, today_odds_dict):
     today_pbp_dict = {}
     for game_id, game in today_schedule.iterrows():
         if game_id in today_odds_dict:
-            print(game_id)
             game_odds = today_odds_dict[game_id]
             try:
                 game['home_ml'] = game_odds['home_ml']
@@ -201,9 +200,6 @@ def predict_game(game_df):
     game_dfs_dict = {}
     filename = 'model_results/xgboost_model.pickle'
     model = dill.load(open(filename, 'rb'))
-    # print model features
-
-
     game_df['home_win_prob'] = model.predict_proba(game_df[X_FEATURES])[:, 1]
     if game_df['description'].iloc[-1] == 'Game End':
         game_df.iloc[-1, game_df.columns.get_loc('home_win_prob')] = int(game_df['scoreHome'].iloc[-1] > game_df['scoreAway'].iloc[-1])
@@ -242,6 +238,9 @@ def get_archive_table():
     return archive_df, plot_dict
 
 def live_probability_page():
+    # TODO: cache the formatting process
+    import time
+    page_start_time = time.time()
     st.title('NBA Live Win Probability')
 
     sleep_time = 10
@@ -254,6 +253,7 @@ def live_probability_page():
     cache_today_schedule = {}
     counter = 0
     while True:
+        process_1_time = time.time()
         if counter % 10 == 0:
             today_odds_dict = scrape_today_odds()
             today_schedule = get_schedule(datetime.today().date())
@@ -262,6 +262,8 @@ def live_probability_page():
         else:
             today_odds_dict = cache_today_odds_dict
             today_schedule = cache_today_schedule
+        print('scraped odds and schedule in {} seconds'.format(time.time() - process_1_time))
+        process_2_time = time.time()
         today_pbp_dict = find_today_games(today_schedule, today_odds_dict)
         if len(today_pbp_dict) == 0:
             st.write('No games right now. Check back later.')
@@ -275,21 +277,31 @@ def live_probability_page():
             format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
             matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
             home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
+        print('formatted pbp data in {} seconds'.format(time.time() - process_2_time))
 
+        process_3_time = time.time()
         dfs_dict = {}
-        for game_id, game_df in format_pbp_dict.items():
+        for game_id, game_data in today_pbp_dict.items():
+            matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
+            home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
+
             if game_id in cache_dfs_dict:
-                new_indices = game_df.index.difference(cache_dfs_dict[game_id].index)
+                new_indices = game_data.index.difference(cache_dfs_dict[game_id].index)
                 if len(new_indices) > 0:
-                    new_pred_df = predict_game(game_df.loc[new_indices])
+                    new_format_df = format_pbp_df_for_model(game_data.loc[new_indices])
+                    new_pred_df = predict_game(new_format_df)
                     dfs_dict[game_id] = pd.concat([cache_dfs_dict[game_id], new_pred_df])
                     cache_dfs_dict[game_id] = dfs_dict[game_id]
                 else:
                     dfs_dict[game_id] = cache_dfs_dict[game_id]
             
             else:
+                game_df = format_pbp_df_for_model(game_data)
                 dfs_dict[game_id] = predict_game(game_df)
                 cache_dfs_dict[game_id] = dfs_dict[game_id]
+        print('predicted games in {} seconds'.format(time.time() - process_3_time))
+
+        process_4_time = time.time()
 
         cur_win_prob_list = []
         tension_list = []
@@ -297,12 +309,20 @@ def live_probability_page():
         dominance_list = []
         for game_id, game_df in dfs_dict.items():
             cur_win_prob_list.append(game_df['home_win_prob'].values[-1])
+            tension_time = time.time()
             tension_list.append(get_tension_index(game_df))
+            print('calculated tension in {} seconds'.format(time.time() - tension_time))
+            excitement_time = time.time()
             excitement_list.append(get_excitement_index(game_df))
+            print('calculated excitement in {} seconds'.format(time.time() - excitement_time))
+            dominance_time = time.time()
             dominance_list.append(get_dominance_index(game_df))
+            print('calculated dominance in {} seconds'.format(time.time() - dominance_time))
+        print('calculated metrics in {} seconds'.format(time.time() - process_4_time))
             
         fig_list = figlist(dfs_dict.values())
 
+        process_5_time = time.time()
         with placeholder.container():
             for i, fig in enumerate(fig_list):
                 col1, col2, col3, col4 = st.columns(4)
@@ -312,8 +332,9 @@ def live_probability_page():
                 col4.metric('{} Win Probability'.format(home_abbr_list[i]), round(100 * cur_win_prob_list[i], 1))
 
                 st.plotly_chart(fig)
+        print('displayed graphs in {} seconds'.format(time.time() - process_5_time))
 
-                
+        print('total time: {}'.format(time.time() - page_start_time))
         time.sleep(sleep_time)
         counter += 1
 
