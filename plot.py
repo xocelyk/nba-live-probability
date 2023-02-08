@@ -119,8 +119,6 @@ def add_possession_by_team(pbp_df):
 
 xgb = pickle.load(open('model_results/xgboost_model.pickle', 'rb'))
 # print xgb features
-print(xgb.feature_importances_)
-print(xgb.get_booster().feature_names)
 
 def add_win_prob(df):
     for idx, row in df.iterrows():
@@ -341,8 +339,8 @@ def get_excitement_index(df):
     '''
     computes the average absolute value of the derivative of win probability with respect to time elapsed
     '''
-    # insert time intervals at every .01 minutes
-    for time in np.arange(0, max(df['time_elapsed']) + .01, .01):
+    # insert time intervals at every .1 minutes
+    for time in np.arange(0, max(df['time_elapsed']) + .1, .1):
         if time not in df['time_elapsed'].values:
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')
@@ -359,8 +357,8 @@ def get_dominance_index(df):
     dominance for the home team
     this function returns the integral of the home win probability with respect to time elapsed
     '''
-    # insert time intervals at every .01 minutes
-    for time in np.arange(0, max(df['time_elapsed']) + .01, .01):
+    # insert time intervals at every .1 minutes
+    for time in np.arange(0, max(df['time_elapsed']) + .1, .1):
         if time not in df['time_elapsed'].values:
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')
@@ -377,7 +375,7 @@ def get_tension_index(df):
     returns the average entropy of the win probability
     '''
     # insert time intervals at every .01 minutes
-    for time in np.arange(0, max(df['time_elapsed']) + .01, .01):
+    for time in np.arange(0, max(df['time_elapsed']) + .1, .1):
         if time not in df['time_elapsed'].values:
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')  
