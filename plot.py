@@ -345,12 +345,8 @@ def get_excitement_index(df):
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')
     df = df.interpolate(method='linear', limit_direction='backward')
-    df['home_win_prob_temp'] = df['home_win_prob']
-    df['home_win_prob_temp'] = df.apply(lambda row: min(max(0.01, row['home_win_prob_temp']), 0.99), axis=1)
-    df['home_win_prob'] = df['home_win_prob_temp']
-    df['home_log_odds_win'] = np.log(df['home_win_prob'] / (1 - df['home_win_prob']))
-    df['log_odds_diff'] = df['home_log_odds_win'].diff().abs()
-    return df['log_odds_diff'].sum() / max(df['time_elapsed']) * 50
+    df['home_win_prob_diff'] = df['home_win_prob'].diff()
+    return df['home_win_prob_diff'].abs().sum() / max(df['time_elapsed'])
 
 def get_dominance_index(df):
     '''
