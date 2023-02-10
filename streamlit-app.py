@@ -271,13 +271,12 @@ def live_probability_page():
         matchup_list = []
         home_abbr_list = []
 
-        # for game_id, game_data in today_pbp_dict.items():s
-        #     format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
-        #     matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
-        #     home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
-        # print('formatted pbp data in {} seconds'.format(time.time() - process_2_time))
+        for game_id, game_data in today_pbp_dict.items():
+            format_pbp_dict[game_id] = format_pbp_df_for_model(game_data)
+            matchup_list.append((game_data['home_team_name'], game_data['away_team_name']))
+            home_abbr_list.append(names_to_abbrs[game_data['home_team_name'].values[0]])
 
-        process_3_time = time.time()
+
         dfs_dict = {}
         for game_id, game_data in today_pbp_dict.items():
             if game_id in cache_dfs_dict:
