@@ -346,7 +346,7 @@ def get_excitement_index(df):
     df = df.sort_values(by='time_elapsed')
     df = df.interpolate(method='linear', limit_direction='backward')
     df['home_win_prob_diff'] = df['home_win_prob'].diff()
-    return df['home_win_prob_diff'].abs().sum() / max(df['time_elapsed'])
+    return df['home_win_prob_diff'].abs().sum() / max(df['time_elapsed']) * 100
 
 def get_dominance_index(df):
     '''
