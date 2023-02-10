@@ -340,7 +340,7 @@ def get_excitement_index(df):
     computes the average absolute value of the derivative of win probability with respect to time elapsed
     '''
     # insert time intervals at every .1 minutes
-    for time in np.arange(0, max(df['time_elapsed']) + .1, .1):
+    for time in np.arange(0, max(df['time_elapsed']) + .2, .2):
         if time not in df['time_elapsed'].values:
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')
@@ -354,7 +354,7 @@ def get_dominance_index(df):
     this function returns the integral of the home win probability with respect to time elapsed
     '''
     # insert time intervals at every .1 minutes
-    for time in np.arange(0, max(df['time_elapsed']) + .1, .1):
+    for time in np.arange(0, max(df['time_elapsed']) + .2, .2):
         if time not in df['time_elapsed'].values:
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')
@@ -371,7 +371,7 @@ def get_tension_index(df):
     returns the average entropy of the win probability
     '''
     # insert time intervals at every .01 minutes
-    for time in np.arange(0, max(df['time_elapsed']) + .1, .1):
+    for time in np.arange(0, max(df['time_elapsed']) + .2, .2):
         if time not in df['time_elapsed'].values:
             df = df.append({'time_elapsed': time}, ignore_index=True)
     df = df.sort_values(by='time_elapsed')  
