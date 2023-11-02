@@ -45,13 +45,21 @@ def get_schedule(today_date):
     today_schedule = schedule[schedule['date'] == today_date]
     # handling timezones
     yesterday_schedule = schedule[schedule['date'] == today_date - pd.Timedelta(days=1)]
-    today_schedule = today_schedule.append(yesterday_schedule)
+    today_schedule = pd.concat([today_schedule, yesterday_schedule])
     return today_schedule
 
 def find_today_games(today_schedule, today_odds_dict):
+    print(today_odds_dict)
     today_pbp_dict = {}
     for game_id, game in today_schedule.iterrows():
-        if game_id in today_odds_dict:
+        if today_odds_dict is None:
+            game['home_ml'] = 100
+            game['away_ml'] = 100
+            game['home_spread'] = 0
+            game['home_spread_odds'] = 100
+            game['away_spread'] = 0
+            game['away_spread_odds'] = 100
+        elif game_id in today_odds_dict:
             game_odds = today_odds_dict[game_id]
             try:
                 game['home_ml'] = game_odds['home_ml']
@@ -228,7 +236,7 @@ def get_archive_table():
         away_team = df.iloc[0]['away_team_name']
         home_score = df.iloc[-1]['home_score']
         away_score = df.iloc[-1]['away_score']
-        archive_data.append([boxscore_id, date, home_team, away_team, home_score, away_score, excitement_index, tension_index, dominance_index])
+        archive_data = pd.concat(archive_data, pd.Series([boxscore_id, date, home_team, away_team, home_score, away_score, excitement_index, tension_index, dominance_index]))
         plot_dict[boxscore_id] = plot
     archive_df = pd.DataFrame(archive_data, columns=['boxscore_id', 'Date', 'Home', 'Away', 'Home Score', 'Away Score', 'Excitement', 'Tension', 'Dominance'])
     archive_df = archive_df.sort_values(by=['Date', 'Home'], ascending=True)
@@ -240,6 +248,7 @@ def get_archive_table():
 def live_probability_page():
     # TODO: cache the formatting process
     import time
+    # st.write("I've lost my free pre-game odds provider, which is fundamental to the win probability model. Until I find a new data source, the live page is down, but I encourage you to check out the archive in the side menu!")
     page_start_time = time.time()
     st.title('NBA Live Win Probability')
 
@@ -255,7 +264,10 @@ def live_probability_page():
     while True:
         process_1_time = time.time()
         if counter % 10 == 0:
-            today_odds_dict = scrape_today_odds()
+            try:
+                today_odds_dict = scrape_today_odds()
+            except:
+                today_odds_dict = None
             today_schedule = get_schedule(datetime.today().date())
             cache_today_odds_dict = today_odds_dict
             cache_today_schedule = today_schedule
@@ -374,4 +386,3 @@ if __name__ == '__main__':
     elif page == 'Dominance Rankings':
         dominance_rankings_page()
  
-

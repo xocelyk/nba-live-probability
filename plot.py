@@ -342,7 +342,7 @@ def get_excitement_index(df):
     # insert time intervals at every .1 minutes
     for time in np.arange(0, max(df['time_elapsed']) + .2, .2):
         if time not in df['time_elapsed'].values:
-            df = df.append({'time_elapsed': time}, ignore_index=True)
+            df = pd.concat([df, pd.Series({'time_elapsed': time})], ignore_index=True)
     df = df.sort_values(by='time_elapsed')
     df = df.interpolate(method='linear', limit_direction='backward')
     df['home_win_prob_diff'] = df['home_win_prob'].diff()
@@ -356,7 +356,7 @@ def get_dominance_index(df):
     # insert time intervals at every .1 minutes
     for time in np.arange(0, max(df['time_elapsed']) + .2, .2):
         if time not in df['time_elapsed'].values:
-            df = df.append({'time_elapsed': time}, ignore_index=True)
+            df = pd.concat([df, pd.Series({'time_elapsed': time})], ignore_index=True)
     df = df.sort_values(by='time_elapsed')
     df = df.interpolate(method='linear', limit_direction='backward')
     df['time_elapsed_diff'] = df['time_elapsed'].diff()
@@ -373,7 +373,7 @@ def get_tension_index(df):
     # insert time intervals at every .01 minutes
     for time in np.arange(0, max(df['time_elapsed']) + .2, .2):
         if time not in df['time_elapsed'].values:
-            df = df.append({'time_elapsed': time}, ignore_index=True)
+            df = pd.concat([df, pd.Series({'time_elapsed': time})], ignore_index=True)
     df = df.sort_values(by='time_elapsed')  
     df = df.interpolate(method='linear', limit_direction='backward')
     df['time_elapsed_diff'] = df['time_elapsed'].diff()
@@ -406,7 +406,7 @@ def main():
             dominance_index = get_dominance_index(df)
             tension_index = get_tension_index(df)
             # add to dataframe
-            game_indices_df = game_indices_df.append({'game': game_id, 'team': df.iloc[0, df.columns.get_loc('home_name')], 'opponent': df.iloc[0, df.columns.get_loc('away_name')], 'excitement_index': excitement_index, 'dominance_index': dominance_index, 'tension_index': tension_index}, ignore_index=True)
+            game_indices_df = pd.concat([df, pd.Series({'game': game_id, 'team': df.iloc[0, df.columns.get_loc('home_name')], 'opponent': df.iloc[0, df.columns.get_loc('away_name')], 'excitement_index': excitement_index, 'dominance_index': dominance_index, 'tension_index': tension_index})], ignore_index=True)
             print()
             print(game_id, 'excitement_index:', round(excitement_index, 2), 'dominance_index:', round(dominance_index, 2), 'tension_index:', round(tension_index, 2))
             print()
