@@ -235,7 +235,7 @@ def get_archive_table():
         away_team = df.iloc[0]['away_team_name']
         home_score = df.iloc[-1]['home_score']
         away_score = df.iloc[-1]['away_score']
-        archive_data = pd.concat([archive_data, pd.Series([boxscore_id, date, home_team, away_team, home_score, away_score, excitement_index, tension_index, dominance_index])])
+        archive_data.append([boxscore_id, date, home_team, away_team, home_score, away_score, excitement_index, tension_index, dominance_index])
         plot_dict[boxscore_id] = plot
     archive_df = pd.DataFrame(archive_data, columns=['boxscore_id', 'Date', 'Home', 'Away', 'Home Score', 'Away Score', 'Excitement', 'Tension', 'Dominance'])
     archive_df = archive_df.sort_values(by=['Date', 'Home'], ascending=True)
