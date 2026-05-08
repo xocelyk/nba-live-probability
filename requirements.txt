@@ -53,7 +53,7 @@ gast==0.4.0
 geographiclib==1.52
 geopy==2.2.0
 gitdb==4.0.9
-GitPython==3.1.24
+GitPython==3.1.49
 google-api-core==2.3.2
 google-auth==2.3.3
 google-auth-oauthlib==0.4.6
