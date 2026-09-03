@@ -1,3 +1,4 @@
+import os
 import requests
 import pandas as pd
 from plotly import graph_objs as go
@@ -107,7 +108,8 @@ def get_pbp_df(bs_id, home_abbr, away_abbr):
 def main():
     year = 2023
     boxscore_ids = get_boxscore_ids(year)
-    dir = 'pbp_data/raw/'
+    dir = os.environ.get('NBA_RAW_PBP_DIR', 'pbp_data/raw') + '/'
+    os.makedirs(dir, exist_ok=True)
     for bs_id in boxscore_ids.keys():
         home_abbr = boxscore_ids[bs_id]['home_abbr']
         away_abbr = boxscore_ids[bs_id]['away_abbr']

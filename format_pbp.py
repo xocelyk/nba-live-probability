@@ -3,7 +3,12 @@ import numpy as np
 import os
 import shutil
 
-pbp_dir = 'pbp_data/raw'
+# Data directories. Override with environment variables if your data lives elsewhere.
+RAW_PBP_DIR = os.environ.get('NBA_RAW_PBP_DIR', 'pbp_data/raw')
+ODDS_DIR = os.environ.get('NBA_ODDS_DIR', 'odds_data/formatted')
+PBP_NO_ODDS_DIR = os.environ.get('NBA_PBP_NO_ODDS_DIR', 'pbp_data/no_odds')
+
+pbp_dir = RAW_PBP_DIR
 pbp_names = []
 pbp_files = os.listdir(pbp_dir)
 for filename in pbp_files:
@@ -11,7 +16,7 @@ for filename in pbp_files:
 pbp_names = list(set(pbp_names))
 
 odds_names = []
-odds_dir = 'odds_data/formatted'
+odds_dir = ODDS_DIR
 odds_files = os.listdir(odds_dir)
 for filename in odds_files: 
     # ignore hidden files
@@ -80,7 +85,7 @@ for key, value in pbp_names_to_odds_names.items():
 update_pbp = True
 
 if update_pbp:
-    pbp_dir = 'pbp_data/raw'
+    pbp_dir = RAW_PBP_DIR
     for filename in pbp_files:
         fullpath = os.path.join(pbp_dir, filename)
         team_abbr = filename[9:12]
@@ -104,7 +109,7 @@ if update_pbp:
 
 
 odds_by_year = {}
-odds_dir = 'odds_data/formatted'
+odds_dir = ODDS_DIR
 for filename in odds_files:
     if filename.startswith('.'):
         continue
@@ -116,7 +121,7 @@ for filename in odds_files:
 #20151027Chicago
 
 # print(odds_by_year.keys())
-pbp_dir = 'pbp_data/no_odds'
+pbp_dir = PBP_NO_ODDS_DIR
 pbp_subdirs = [d for d in os.listdir(pbp_dir) if os.path.isdir(os.path.join(pbp_dir, d))]
 for subdir in pbp_subdirs:
     if subdir not in odds_by_year:
